@@ -1,54 +1,78 @@
-import React from "react";
+import { useContext, useState } from "react";
+import { InputValueContext } from "./context/InputContext";
+import { User } from "./interfaces";
+import { Datagrid } from "./components/Datagrid";
 
 interface IAppProps {
-  children: React.ReactNode;
+  headerText: string;
+  extraText?: string;
 }
 
-interface User {
-  name: string;
-  age: number;
-}
+const defaultFormData = {
+  title: "",
+  body: "",
+};
 
-interface Backpack<Type> {
-  add: (obj: Type) => void;
-  get: () => Type;
-}
+function App({ headerText, extraText = "Oke default text" }: IAppProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState(defaultFormData);
+  const { title, body } = formData;
+  const { state, dispatch } = useContext(InputValueContext);
+  const users = [
+    { id: 1, firstName: "Reza", lastName: "Augusdi", age: 20 },
+    { id: 2, firstName: "Reza", lastName: "Augusdi", age: 20 },
+    { id: 3, firstName: "Reza", lastName: "Augusdi", age: 20 },
+  ];
 
-interface Point {
-  x: number;
-  y: number;
-}
+  const fetchUser = () =>
+    setUser({
+      name: "Haji",
+      age: 15,
+      address: {
+        street: "My Street .",
+        number: 99,
+        zip: "123454",
+      },
+      admin: false,
+    });
 
-// declare const backpack: Backpack<string>;
-
-// backpack.add("10");
-// const Hola = backpack.get();
-// console.log(Hola);
-
-function App(props: IAppProps) {
-  const helloWord = 9;
-  console.log(helloWord);
-
-  function logPoint(p: Point) {
-    console.log("x : " + p.x + ", y : " + p.y);
-  }
-
-  const point = { x: 10, y: 16 };
-
-  logPoint(point);
-
-  // console.log(Hola);
-
-  const user: User = {
-    name: "Halo",
-    age: 10,
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
   };
+  const onSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
 
-  console.log(user);
+    setFormData(defaultFormData);
+  };
 
   return (
     <div className="App">
-      <div className="text-2xl text-red-400">{user.name}</div>
+      <h1>{headerText}</h1>
+      {extraText && <p>{extraText}</p>}
+      <button onClick={fetchUser}>Fetch User</button>
+      {user && <p>{user.name}</p>}
+      <form onSubmit={onSubmitHandler}>
+        <div>
+          <label htmlFor="title">First Text (title)</label>
+          <input type="text" value={title} id="title" onChange={onChange} />
+        </div>
+        <div>
+          <label htmlFor="body">Second Text (body)</label>
+          <input type="text" value={body} id="body" onChange={onChange} />
+        </div>
+      </form>
+
+      <Datagrid items={users} />
+
+      <p>Value: {state.inputValue}</p>
+      <button onClick={() => dispatch({ type: "SET_INPUT_VALUE_TO_100" })}>
+        SET VALUE TO 100
+      </button>
     </div>
   );
 }
